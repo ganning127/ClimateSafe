@@ -67,7 +67,7 @@ void WIFISetUp(void)
     delay(1000);
     WiFi.mode(WIFI_STA);
     WiFi.setAutoConnect(true);
-    WiFi.begin("Blah", "hellogello");
+    WiFi.begin("DukeVisitor", "");
     delay(100);
 
     byte count = 0;
@@ -84,7 +84,6 @@ void WIFISetUp(void)
     {
         Heltec.display->drawString(0, 0, "Connecting...OK.");
         Heltec.display->display();
-        //		delay(500);
     }
     else
     {
@@ -164,8 +163,7 @@ void setup()
     Heltec.display->clear();
     WIFISetUp();
 
-    // WiFi.disconnect(true); // Reinitialize WIFI
-    delay(1000);
+    delay(3000);
     WiFi.mode(WIFI_STA);
     WiFi.setAutoConnect(true);
 
@@ -177,7 +175,7 @@ void loop()
     counter++;
     if (counter > 2)
     {
-        return;
+        return; // only send 2 API requests
     }
 
     temperature = dht.getTemperature();
@@ -185,36 +183,25 @@ void loop()
 
     String temperatureDisplay = "Temperature: " + (String)temperature + "°C";
     String humidityDisplay = "Humidity: " + (String)humidity + "%";
-    Heltec.display->clear();
-    // Prepare to display temperature
-    Heltec.display->drawString(0, 0, temperatureDisplay);
-    // Prepare to display humidity
-    Heltec.display->drawString(0, 12, humidityDisplay);
-    // Display the readings
-    Heltec.display->display();
 
     stringstream url;
-    // url << serverPath << "?temp=" << currentTemp << "&humidity=" << currentHumidity << "&co=" << "null" << "&combust_gas=" << "null" << "&gas_smoke=" << "null" << "&photo_sensitive=" << "null" << "&air_pollution=" << "null" << "&alert=" << "false";
-    url << "https://climatesafe-gfwgzmn9w-ganning127.vercel.app/api/arduino-post"
+    url << "https://climatesafe.vercel.app/api/arduino-post"
         << "?temp=" << to_string(temperature) << "&humidity=" << to_string(humidity);
 
     Serial.println();
     Serial.println(url.str().c_str());
 
     http.begin(url.str().c_str());
-    int httpResponseCode = http.GET();
+    int httpResponseCode = http.POST("");
 
-    Serial.print("HTTP Response code: ");
-    Serial.println(httpResponseCode);
+    String payload = http.getString(); // HTTP Response
 
-    // if (httpResponseCode > 0)
-    // {
-    String payload = http.getString();
     Serial.println(payload);
     Heltec.display->clear();
-    Heltec.display->drawString(0, 0, payload);
+    Heltec.display->drawString(0, 0, temperatureDisplay);
+    Heltec.display->drawString(0, 12, humidityDisplay);
+    Heltec.display->drawString(0, 24, payload);
     Heltec.display->display();
-    // }
 
     delay(1000);
 }
