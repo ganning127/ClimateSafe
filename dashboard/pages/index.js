@@ -2,6 +2,8 @@ import Head from "next/head";
 import clientPromise from "../lib/mongodb";
 import { Container, Text } from "@chakra-ui/react";
 import { Landing } from "../components/Landing";
+import { NavBar } from "../components/NavBar";
+import { MedSep } from "../components/Separators/MedSep";
 
 export default function Home({ isConnected }) {
   return (
@@ -9,9 +11,18 @@ export default function Home({ isConnected }) {
       <Head>
         <title>ClimateSafe | Detecting Air Pollution</title>
       </Head>
+      <NavBar />
 
       <Container maxW="container.xl">
         <Landing />
+
+        <MedSep />
+        <MedSep />
+        <MedSep />
+        <MedSep />
+        <MedSep />
+        <MedSep />
+        <MedSep />
       </Container>
     </>
   );
