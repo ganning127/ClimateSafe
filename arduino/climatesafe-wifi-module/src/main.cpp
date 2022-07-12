@@ -28,12 +28,19 @@
 #include <HTTPClient.h>
 #include <Ethernet.h>
 #include <EthernetClient.h>
+#include "DHTesp.h"
+#include <cmath>
+#include <sstream>
+#include <string>
+#include <iostream>
 
+using namespace std;
 // Name of the server we want to connect to
 const char kHostname[] = "arduino.cc";
 // Path to download (this is the bit after the hostname in the URL
 // that you want to download
 const char kPath[] = "/";
+int counter = 0;
 
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 
@@ -42,6 +49,10 @@ const int kNetworkTimeout = 30 * 1000;
 // Number of milliseconds to wait if no data is available before trying again
 const int kNetworkDelay = 1000;
 HTTPClient http;
+DHTesp dht;
+float currentTemp;
+float currentHumidity;
+
 void logo()
 {
     Heltec.display->clear();
@@ -138,6 +149,10 @@ void WIFIScan(void)
 
 void setup()
 {
+    dht.setup(27, DHTesp::DHT11);
+
+    currentTemp = dht.getTemperature();
+    currentHumidity = dht.getHumidity();
 
     pinMode(LED, OUTPUT);
     digitalWrite(LED, HIGH);
@@ -159,25 +174,51 @@ void setup()
 
 void loop()
 {
-    // WIFIScan();
-    //  HTTPClient http;
-    String serverPath = "https://jsonplaceholder.typicode.com/todos/1";
-
-    // Your Domain name with URL path or IP address with path
-    http.begin(serverPath.c_str());
-
-    // Send HTTP GET request
-    int httpResponseCode = http.GET();
-
-    if (httpResponseCode > 0)
+    counter++;
+    if (counter > 2)
     {
+        return;
+    }
+
+    float temperature = dht.getTemperature();
+    float humidity = dht.getHumidity();
+
+    if ((!(isnan(temperature)) && !(isnan(humidity))) && (temperature != currentTemp || humidity != currentHumidity))
+    {
+        currentTemp = temperature;
+        currentHumidity = humidity;
+        String temperatureDisplay = "Temperature: " + (String)currentTemp + "°C";
+        String humidityDisplay = "Humidity: " + (String)currentHumidity + "%";
+        Heltec.display->clear();
+        // Prepare to display temperature
+        Heltec.display->drawString(0, 0, temperatureDisplay);
+        // Prepare to display humidity
+        Heltec.display->drawString(0, 12, humidityDisplay);
+        // Display the readings
+        Heltec.display->display();
+
+        stringstream url;
+        // url << serverPath << "?temp=" << currentTemp << "&humidity=" << currentHumidity << "&co=" << "null" << "&combust_gas=" << "null" << "&gas_smoke=" << "null" << "&photo_sensitive=" << "null" << "&air_pollution=" << "null" << "&alert=" << "false";
+        url << "https://climatesafe.vercel.app/api/arduino-post"
+            << "?temp=" << to_string(currentTemp) << "&humidity=" << to_string(currentHumidity);
+
+        Serial.println();
+        Serial.println(url.str().c_str());
+
+        http.begin(url.str().c_str());
+        int httpResponseCode = http.GET();
+
         Serial.print("HTTP Response code: ");
         Serial.println(httpResponseCode);
+
+        // if (httpResponseCode > 0)
+        // {
         String payload = http.getString();
         Serial.println(payload);
         Heltec.display->clear();
         Heltec.display->drawString(0, 0, payload);
         Heltec.display->display();
+        // }
     }
 
     delay(1000);

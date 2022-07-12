@@ -1,6 +1,7 @@
 import Head from "next/head";
 import clientPromise from "../lib/mongodb";
 import { Container, Text } from "@chakra-ui/react";
+import { Landing } from "../components/Landing";
 
 export default function Home({ isConnected }) {
   return (
@@ -10,9 +11,7 @@ export default function Home({ isConnected }) {
       </Head>
 
       <Container maxW="container.xl">
-        <Text fontSize="2xl" fontWeight="bold">
-          {isConnected ? "Connected to MongoDB" : "Not Connected"}
-        </Text>
+        <Landing />
       </Container>
     </>
   );
