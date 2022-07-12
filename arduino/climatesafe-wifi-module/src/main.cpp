@@ -50,8 +50,8 @@ const int kNetworkTimeout = 30 * 1000;
 const int kNetworkDelay = 1000;
 HTTPClient http;
 DHTesp dht;
-float currentTemp;
-float currentHumidity;
+float temperature;
+float humidity;
 
 void logo()
 {
@@ -151,8 +151,8 @@ void setup()
 {
     dht.setup(27, DHTesp::DHT11);
 
-    currentTemp = dht.getTemperature();
-    currentHumidity = dht.getHumidity();
+    temperature = dht.getTemperature();
+    humidity = dht.getHumidity();
 
     pinMode(LED, OUTPUT);
     digitalWrite(LED, HIGH);
@@ -180,46 +180,41 @@ void loop()
         return;
     }
 
-    float temperature = dht.getTemperature();
-    float humidity = dht.getHumidity();
+    temperature = dht.getTemperature();
+    humidity = dht.getHumidity();
 
-    if ((!(isnan(temperature)) && !(isnan(humidity))) && (temperature != currentTemp || humidity != currentHumidity))
-    {
-        currentTemp = temperature;
-        currentHumidity = humidity;
-        String temperatureDisplay = "Temperature: " + (String)currentTemp + "°C";
-        String humidityDisplay = "Humidity: " + (String)currentHumidity + "%";
-        Heltec.display->clear();
-        // Prepare to display temperature
-        Heltec.display->drawString(0, 0, temperatureDisplay);
-        // Prepare to display humidity
-        Heltec.display->drawString(0, 12, humidityDisplay);
-        // Display the readings
-        Heltec.display->display();
+    String temperatureDisplay = "Temperature: " + (String)temperature + "°C";
+    String humidityDisplay = "Humidity: " + (String)humidity + "%";
+    Heltec.display->clear();
+    // Prepare to display temperature
+    Heltec.display->drawString(0, 0, temperatureDisplay);
+    // Prepare to display humidity
+    Heltec.display->drawString(0, 12, humidityDisplay);
+    // Display the readings
+    Heltec.display->display();
 
-        stringstream url;
-        // url << serverPath << "?temp=" << currentTemp << "&humidity=" << currentHumidity << "&co=" << "null" << "&combust_gas=" << "null" << "&gas_smoke=" << "null" << "&photo_sensitive=" << "null" << "&air_pollution=" << "null" << "&alert=" << "false";
-        url << "https://climatesafe.vercel.app/api/arduino-post"
-            << "?temp=" << to_string(currentTemp) << "&humidity=" << to_string(currentHumidity);
+    stringstream url;
+    // url << serverPath << "?temp=" << currentTemp << "&humidity=" << currentHumidity << "&co=" << "null" << "&combust_gas=" << "null" << "&gas_smoke=" << "null" << "&photo_sensitive=" << "null" << "&air_pollution=" << "null" << "&alert=" << "false";
+    url << "https://climatesafe-gfwgzmn9w-ganning127.vercel.app/api/arduino-post"
+        << "?temp=" << to_string(temperature) << "&humidity=" << to_string(humidity);
 
-        Serial.println();
-        Serial.println(url.str().c_str());
+    Serial.println();
+    Serial.println(url.str().c_str());
 
-        http.begin(url.str().c_str());
-        int httpResponseCode = http.GET();
+    http.begin(url.str().c_str());
+    int httpResponseCode = http.GET();
 
-        Serial.print("HTTP Response code: ");
-        Serial.println(httpResponseCode);
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
 
-        // if (httpResponseCode > 0)
-        // {
-        String payload = http.getString();
-        Serial.println(payload);
-        Heltec.display->clear();
-        Heltec.display->drawString(0, 0, payload);
-        Heltec.display->display();
-        // }
-    }
+    // if (httpResponseCode > 0)
+    // {
+    String payload = http.getString();
+    Serial.println(payload);
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, payload);
+    Heltec.display->display();
+    // }
 
     delay(1000);
 }
