@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   const db = await client.db("climatesafe_arduino");
   const collection = await db.collection("data_points");
 
-  const hardware_id = req.query.hardware_id || "demo-arduino";
+  const hardware_id = req.query.hardware_id || "demo-board";
   const temp = req.query.temp || null;
   const humidity = req.query.humidity || null;
   const co = req.query.co || null;

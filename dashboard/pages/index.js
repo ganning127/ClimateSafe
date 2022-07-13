@@ -7,11 +7,6 @@ import {
   Img,
   Box,
   Heading,
-  List,
-  ListItem,
-  ListIcon,
-  OrderedList,
-  UnorderedList,
 } from "@chakra-ui/react";
 import { Footer } from "../components/Footer";
 import { Landing } from "../components/Landing";
@@ -158,6 +153,7 @@ export default function Home({ isConnected }) {
             color="purple.300"
           />
         </SimpleGrid>
+        <MedSep line={true} />
       </Container>
 
       <Footer />

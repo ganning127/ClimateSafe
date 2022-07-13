@@ -82,11 +82,12 @@ export const NavBar = () => {
             display={{ base: "none", md: "inline-flex" }}
             fontSize={"sm"}
             fontWeight={600}
+            as="a"
+            href="/login"
             color={"white"}
             bg={"darkgreen"}
-            href={"#"}
             _hover={{
-              bg: "pink.300",
+              bg: "green.400",
             }}
           >
             Get Started
