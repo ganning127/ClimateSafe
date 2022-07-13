@@ -14,6 +14,7 @@ export default async function handler(req, res) {
   const photo_sensitive = req.query.photo_sensitive || null;
   const air_pollution = req.query.air_pollution || null;
   const alert = req.query.alert || false;
+  const lpg = req.query.lpg || null;
 
   const data = {
     created_at: new Date(),
@@ -26,6 +27,7 @@ export default async function handler(req, res) {
     photo_sensitive,
     air_pollution,
     alert,
+    lpg,
   };
 
   const resp = await collection.insertOne(data);

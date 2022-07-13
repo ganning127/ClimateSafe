@@ -6,9 +6,6 @@ export default async function handler(req, res) {
   const db = await client.db("climatesafe_arduino");
   const collection = await db.collection("data_points");
 
-  const resp = await collection.updateMany(
-    {},
-    { $set: { hardware_id: "demo-board" } }
-  );
+  const resp = await collection.updateMany({}, { $set: { lpg: null } });
   res.status(200).json({ resp });
 }
