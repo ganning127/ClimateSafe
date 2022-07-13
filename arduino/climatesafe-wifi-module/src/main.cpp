@@ -23,7 +23,6 @@
 #include "heltec.h"
 #include "WiFi.h"
 #include "images.h"
-// #include <HttpClient.h>
 #include <SPI.h>
 #include <HTTPClient.h>
 #include <Ethernet.h>
@@ -33,13 +32,22 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include "MQ7.h"
+#include <MQUnifiedsensor.h>
+#include <Wire.h>
+#include "MQ2.h"
+#define A_PIN 33
+#define VOLTAGE 3.3
 
 using namespace std;
-// Name of the server we want to connect to
-const char kHostname[] = "arduino.cc";
-// Path to download (this is the bit after the hostname in the URL
-// that you want to download
-const char kPath[] = "/";
+
+// int Analog_Input = 25; // Pin 25
+
+// MQUnifiedsensor MQ2(Analog_Input);
+
+MQ7 mq7(A_PIN, VOLTAGE);
+MQ2 mq2(35);
+
 int counter = 0;
 
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
@@ -67,7 +75,7 @@ void WIFISetUp(void)
     delay(1000);
     WiFi.mode(WIFI_STA);
     WiFi.setAutoConnect(true);
-    WiFi.begin("DukeVisitor", "");
+    WiFi.begin("Blah", "hellogello");
     delay(100);
 
     byte count = 0;
@@ -148,6 +156,11 @@ void WIFIScan(void)
 
 void setup()
 {
+    Serial.begin(115200);
+
+    while (!Serial)
+        ; // wait for serial port to connect. Needed for native USB
+
     dht.setup(27, DHTesp::DHT11);
 
     temperature = dht.getTemperature();
@@ -166,42 +179,55 @@ void setup()
     delay(3000);
     WiFi.mode(WIFI_STA);
     WiFi.setAutoConnect(true);
+    Heltec.display->clear();
+    Heltec.display->drawString(0, 0, "Calibrating CO sensor...");
+    Heltec.display->display();
 
-    Serial.begin(9600);
+    mq7.calibrate(); // calculates R0
+    mq2.begin();
 }
 
 void loop()
 {
-    counter++;
-    if (counter > 2)
-    {
-        return; // only send 2 API requests
-    }
+    // counter++;
+    // if (counter > 2)
+    // {
+    //     return; // only send 2 API requests
+    // }
 
     temperature = dht.getTemperature();
     humidity = dht.getHumidity();
+    float coPPM = mq7.readPpm();
+    float *MQ2values = mq2.read(true); // set it false if you don't want to print the values in the Serial
+    float MQ2co = MQ2values[1];        // https://create.arduino.cc/projecthub/Junezriyaz/how-to-connect-mq2-gas-sensor-to-arduino-f6a456
 
     String temperatureDisplay = "Temperature: " + (String)temperature + "°C";
     String humidityDisplay = "Humidity: " + (String)humidity + "%";
+    String coPPMDisplay = "CO PPM: " + (String)coPPM;
+    String MQ2coDisplay = "MQ2 CO: " + (String)MQ2co;
 
-    stringstream url;
-    url << "https://climatesafe.vercel.app/api/arduino-post"
-        << "?temp=" << to_string(temperature) << "&humidity=" << to_string(humidity);
-
-    Serial.println();
-    Serial.println(url.str().c_str());
-
-    http.begin(url.str().c_str());
-    int httpResponseCode = http.POST("");
-
-    String payload = http.getString(); // HTTP Response
-
-    Serial.println(payload);
     Heltec.display->clear();
     Heltec.display->drawString(0, 0, temperatureDisplay);
     Heltec.display->drawString(0, 12, humidityDisplay);
-    Heltec.display->drawString(0, 24, payload);
+    Heltec.display->drawString(0, 24, coPPMDisplay);
+    Heltec.display->drawString(0, 36, MQ2coDisplay);
+
     Heltec.display->display();
+
+    // stringstream url;
+    // url << "https://climatesafe.vercel.app/api/arduino-post"
+    //     << "?temp=" << to_string(temperature) << "&humidity=" << to_string(humidity) << "&co=" << to_string(coPPM);
+
+    // Serial.println();
+    // Serial.println(url.str().c_str());
+
+    // http.begin(url.str().c_str());
+    // int httpResponseCode = http.POST("");
+
+    // String payload = http.getString(); // HTTP Response
+
+    // Heltec.display->drawString(0, 36, payload);
+    // Heltec.display->display();
 
     delay(1000);
 }
