@@ -12,22 +12,10 @@ import {
   DrawerContent,
   Text,
   useDisclosure,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
   Img,
 } from "@chakra-ui/react";
-import { FiHome, FiMenu, FiBell, FiChevronDown } from "react-icons/fi";
-import { MdOutlineHealthAndSafety } from "react-icons/md";
-import {
-  AiOutlineHeart,
-  AiOutlineCheckCircle,
-  AiOutlineDotChart,
-} from "react-icons/ai";
-import { BsCalculator, BsBarChart } from "react-icons/bs";
-import { BiWalk } from "react-icons/bi";
+import { FiMenu } from "react-icons/fi";
+import { AiOutlineHeart } from "react-icons/ai";
 import { User } from "./User";
 const LinkItems = [
   { name: "Dashboard", icon: AiOutlineHeart, href: "/dashboard" },
