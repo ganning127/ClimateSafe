@@ -48,7 +48,7 @@ using namespace std;
 MQ7 mq7(A_PIN, VOLTAGE);
 MQ2 mq2(35);
 
-const int MQ5=34;
+const int MQ5 = 34;
 float gas_value;
 
 int counter = 0;
@@ -172,7 +172,7 @@ void setup()
     pinMode(LED, OUTPUT);
     digitalWrite(LED, HIGH);
 
-    pinMode (MQ5,INPUT);
+    pinMode(MQ5, INPUT);
 
     Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, true /*Serial Enable*/);
 
@@ -194,49 +194,52 @@ void setup()
 
 void loop()
 {
-    // counter++;
-    // if (counter > 2)
-    // {
-    //     return; // only send 2 API requests
-    // }
+    counter++;
+    if (counter > 2)
+    {
+        return; // only send 2 API requests
+    }
 
     String hardware_id = "demo-board";
     temperature = dht.getTemperature();
     humidity = dht.getHumidity();
     float coPPM = mq7.readPpm();
     float *MQ2values = mq2.read(false); // set it false if you don't want to print the values in the Serial
-    float MQ2co = MQ2values[1];        // https://create.arduino.cc/projecthub/Junezriyaz/how-to-connect-mq2-gas-sensor-to-arduino-f6a456
-    float gas_value = analogRead(MQ5);
-    
-    String combustableGasDisplay = "CG PPM: " + (String)gas_value;
-    String temperatureDisplay = "Temperature: " + (String)temperature + "°C";
-    String humidityDisplay = "Humidity: " + (String)humidity + "%";
-    String coPPMDisplay = "CO PPM: " + (String)coPPM;
-    String MQ2coDisplay = "MQ2 CO: " + (String)MQ2co;
+    float gas_smoke = MQ2values[2];
+    float lpg = MQ2values[0];
+    float combust_gas = analogRead(MQ5);
+
+    String combustableGasDisplay = "CG PPM: " + (String)combust_gas;
+    // String temperatureDisplay = "Temperature: " + (String)temperature + "°C";
+    // String humidityDisplay = "Humidity: " + (String)humidity + "%";
+    // String coPPMDisplay = "CO PPM: " + (String)coPPM;
+    String smokeDisplay = "Smoke: " + (String)gas_smoke;
+    String lpgDisplay = "LPG: " + (String)lpg;
 
     Heltec.display->clear();
-    Heltec.display->drawString(0, 0, temperatureDisplay);
-    Heltec.display->drawString(0, 12, humidityDisplay);
-    Heltec.display->drawString(0, 24, coPPMDisplay);
-    Heltec.display->drawString(0, 36, MQ2coDisplay);
-    Heltec.display->drawString(0, 48, combustableGasDisplay);
+    // Heltec.display->drawString(0, 0, temperatureDisplay);
+    // Heltec.display->drawString(0, 12, humidityDisplay);
+    // Heltec.display->drawString(0, 24, coPPMDisplay);
+    Heltec.display->drawString(0, 0, smokeDisplay);
+    Heltec.display->drawString(0, 12, lpgDisplay);
+    Heltec.display->drawString(0, 24, combustableGasDisplay);
 
     Heltec.display->display();
 
-    // stringstream url;
-    // url << "https://climatesafe.vercel.app/api/arduino-post"
-    //     << "?temp=" << to_string(temperature) << "&humidity=" << to_string(humidity) << "&co=" << to_string(coPPM) << "&hardware_id=" << hardware_id;
+    stringstream url;
+    url << "https://climatesafe.vercel.app/api/arduino-post"
+        << "?temp=" << to_string(temperature) << "&humidity=" << to_string(humidity) << "&co=" << to_string(coPPM) << "&hardware_id=" << hardware_id << "&gas_smoke=" << to_string(gas_smoke) << "&lpg=" << to_string(lpg) << "&combust_gas=" << to_string(combust_gas);
 
-    // Serial.println();
-    // Serial.println(url.str().c_str());
+    Serial.println();
+    Serial.println(url.str().c_str());
 
-    // http.begin(url.str().c_str());
-    // int httpResponseCode = http.POST("");
+    http.begin(url.str().c_str());
+    int httpResponseCode = http.POST("");
 
-    // String payload = http.getString(); // HTTP Response
+    String payload = http.getString(); // HTTP Response
 
-    // Heltec.display->drawString(0, 36, payload);
-    // Heltec.display->display();
+    Heltec.display->drawString(0, 36, payload);
+    Heltec.display->display();
 
     delay(1000);
 }
