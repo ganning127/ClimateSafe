@@ -4,7 +4,7 @@ export const HeadingWithDesc = ({ desc, children, smaller }) => {
     <Box textAlign="center" maxW="700px" mx="auto">
       <Heading
         as="h1"
-        fontSize={smaller ? "4xl" : "5xl"}
+        fontSize={{ base: "4xl", md: "5xl" }}
         color="text"
         mb="4"
         fontWeight="extrabold"

@@ -9,7 +9,7 @@ export const IconCard = ({ icon, title, desc, color }) => {
         rounded="md"
         transition="all 0.2s"
         _hover={{
-          bg: "lightgreen",
+          bg: color,
           transform: "scale(1.05)",
         }}
       >

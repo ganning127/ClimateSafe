@@ -7,6 +7,11 @@ import {
   Img,
   Box,
   Heading,
+  List,
+  ListItem,
+  ListIcon,
+  OrderedList,
+  UnorderedList,
 } from "@chakra-ui/react";
 import { Footer } from "../components/Footer";
 import { Landing } from "../components/Landing";
@@ -19,8 +24,9 @@ import { AiOutlineCloud } from "react-icons/ai";
 import { FaTemperatureHigh } from "react-icons/fa";
 import { WiSmoke, WiHumidity } from "react-icons/wi";
 import { MdOutlineMasks } from "react-icons/md";
-import { BiGasPump } from "react-icons/bi";
+import { BiGasPump, BiMicrochip } from "react-icons/bi";
 import { BsLightbulb } from "react-icons/bs";
+import { TbNumber1, TbNumber2, TbNumber3 } from "react-icons/tb";
 
 const detects = [
   {
@@ -122,9 +128,38 @@ export default function Home({ isConnected }) {
           />
         </SimpleGrid>
 
-        <MedSep />
+        <MedSep line={true} />
+
+        <HeadingWithDesc>
+          How Climate
+          <Text as="span" color="darkgreen">
+            Safe
+          </Text>{" "}
+          Works
+        </HeadingWithDesc>
+
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+          <IconCard
+            icon={TbNumber1}
+            title="Heltec Wifi Kit 32"
+            desc="The Heltec Wifi Kit 32 uses a multitude of sensors to measure environmental hazards around you"
+            color="darkgreen"
+          />
+          <IconCard
+            icon={TbNumber2}
+            title="MongoDB"
+            desc="All data collected is sent to a MongoDB database. If data collected is dangerous for humans, an alert will be sent to the user."
+            color="blue.300"
+          />
+          <IconCard
+            icon={TbNumber3}
+            title="Dashboard"
+            desc="We'll analyze the data for you, creating beautiful graphs and metrics to help you understand your enviorment."
+            color="purple.300"
+          />
+        </SimpleGrid>
       </Container>
-      <MedSep line={true} />
+
       <Footer />
     </>
   );
