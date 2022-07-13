@@ -19,13 +19,24 @@ import { useEffect, useState } from "react";
 import { AiOutlineCloud } from "react-icons/ai";
 import { FaTemperatureHigh } from "react-icons/fa";
 import { WiSmoke, WiHumidity } from "react-icons/wi";
+import { BsAlarm } from "react-icons/bs";
+import Chart from "chart.js/auto"; // needed for "no tree shaking"
+import { Line } from "react-chartjs-2";
 
 export default function Dashboard({ success, data }) {
   const [lastRefresh, setLastRefresh] = useState("");
 
-  let { coAvg, tempAvg, humidityAvg, earliest } = dataAnalysis(data);
+  let { coAvg, tempAvg, humidityAvg, earliest, numAlerts } = dataAnalysis(data);
+
+  const tempLineChart = lineChartProcessData(data, "temp", "lightred");
+  const humidityLineChart = lineChartProcessData(
+    data,
+    "humidity",
+    "lightgreen"
+  );
+  const coLineChart = lineChartProcessData(data, "co", "orange");
   useEffect(() => {
-    setLastRefresh(new Date().toLocaleTimeString());
+    setLastRefresh(new Date().toLocaleString());
   }, []);
 
   return (
@@ -34,7 +45,7 @@ export default function Dashboard({ success, data }) {
         <title>Dashboard | ClimateSafe</title>
       </Head>
 
-      <SideBar>
+      <SideBar active="dashboard">
         <HeadingWithDesc
           align="left"
           smaller={true}
@@ -70,10 +81,34 @@ export default function Dashboard({ success, data }) {
           />
           <MetricCard
             desc="average humidity level"
-            num={coAvg.toFixed(2) + " %"}
+            num={humidityAvg.toFixed(2) + " %"}
             color="green.300"
             icon={WiHumidity}
           />
+          <MetricCard
+            desc="total alerts"
+            num={numAlerts}
+            color="yellow.500"
+            icon={BsAlarm}
+          />
+        </SimpleGrid>
+
+        <SmSep line={true} />
+
+        <HeadingWithDesc align="left" smaller={true}>
+          All time data
+        </HeadingWithDesc>
+
+        <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={8}>
+          <Box>
+            <Line data={tempLineChart} />
+          </Box>
+          <Box>
+            <Line data={humidityLineChart} />
+          </Box>
+          <Box>
+            <Line data={coLineChart} />
+          </Box>
         </SimpleGrid>
       </SideBar>
     </>
@@ -122,7 +157,6 @@ const dataAnalysis = (data) => {
 
   data.forEach((item) => {
     if (item.co && !isNaN(item.co)) {
-      console.log(item.co);
       coSum += parseFloat(item.co);
       coCount++;
     }
@@ -139,14 +173,43 @@ const dataAnalysis = (data) => {
   let coAvg = coSum / coCount;
   let tempAvg = tempSum / tempCount;
   let humidityAvg = humiditySum / humidityCount;
-  console.log("Average CO Levels", coAvg);
-  console.log("Average Temperature", tempAvg);
-  console.log("Average Humidity", humidityAvg);
+
+  var alertArray = data.filter(function (el) {
+    return el.alert;
+  });
 
   return {
     coAvg,
     tempAvg,
     humidityAvg,
     earliest,
+    numAlerts: alertArray.length,
   };
+};
+
+const lineChartProcessData = (data, label, color) => {
+  console.log(data);
+  // remove all data points where label is null or not a number
+  data = data.filter((item) => {
+    return item[label] && !isNaN(item[label]);
+  });
+
+  let dataUse = {
+    labels: data.map((item) => {
+      return new Date(item.created_at).toLocaleString();
+    }),
+    datasets: [
+      {
+        label: label,
+        fill: false,
+        data: data.map((item) => {
+          return item[label];
+        }),
+        tension: 0.1,
+        borderColor: color,
+      },
+    ],
+  };
+
+  return dataUse;
 };

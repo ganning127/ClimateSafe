@@ -17,8 +17,14 @@ import {
 import { FiMenu } from "react-icons/fi";
 import { AiOutlineHeart } from "react-icons/ai";
 import { User } from "./User";
+import { BsTable } from "react-icons/bs";
 const LinkItems = [
   { name: "Dashboard", icon: AiOutlineHeart, href: "/dashboard" },
+  {
+    name: "Raw Data",
+    icon: BsTable,
+    href: "/dashboard/raw-data",
+  },
 ];
 
 export const SideBar = ({ active, children }) => {
@@ -108,7 +114,7 @@ const NavItem = ({ icon, children, href, active, ...rest }) => {
         cursor="pointer"
         fontWeight="semibold"
         bg={active === children.toLowerCase() ? "darkgreen" : "transparent"}
-        color={active === children.toLowerCase() ? "white.off" : "black.light"}
+        color={active === children.toLowerCase() ? "white" : "text"}
         transition="all 0.2s"
         _hover={{
           bg: "lightgreen",
