@@ -48,6 +48,9 @@ using namespace std;
 MQ7 mq7(A_PIN, VOLTAGE);
 MQ2 mq2(35);
 
+const int MQ5=34;
+float gas_value;
+
 int counter = 0;
 
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
@@ -169,6 +172,8 @@ void setup()
     pinMode(LED, OUTPUT);
     digitalWrite(LED, HIGH);
 
+    pinMode (MQ5,INPUT);
+
     Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, true /*Serial Enable*/);
 
     logo();
@@ -195,12 +200,15 @@ void loop()
     //     return; // only send 2 API requests
     // }
 
+    String hardware_id = "demo-board";
     temperature = dht.getTemperature();
     humidity = dht.getHumidity();
     float coPPM = mq7.readPpm();
-    float *MQ2values = mq2.read(true); // set it false if you don't want to print the values in the Serial
+    float *MQ2values = mq2.read(false); // set it false if you don't want to print the values in the Serial
     float MQ2co = MQ2values[1];        // https://create.arduino.cc/projecthub/Junezriyaz/how-to-connect-mq2-gas-sensor-to-arduino-f6a456
-
+    float gas_value = analogRead(MQ5);
+    
+    String combustableGasDisplay = "CG PPM: " + (String)gas_value;
     String temperatureDisplay = "Temperature: " + (String)temperature + "°C";
     String humidityDisplay = "Humidity: " + (String)humidity + "%";
     String coPPMDisplay = "CO PPM: " + (String)coPPM;
@@ -211,12 +219,13 @@ void loop()
     Heltec.display->drawString(0, 12, humidityDisplay);
     Heltec.display->drawString(0, 24, coPPMDisplay);
     Heltec.display->drawString(0, 36, MQ2coDisplay);
+    Heltec.display->drawString(0, 48, combustableGasDisplay);
 
     Heltec.display->display();
 
     // stringstream url;
     // url << "https://climatesafe.vercel.app/api/arduino-post"
-    //     << "?temp=" << to_string(temperature) << "&humidity=" << to_string(humidity) << "&co=" << to_string(coPPM);
+    //     << "?temp=" << to_string(temperature) << "&humidity=" << to_string(humidity) << "&co=" << to_string(coPPM) << "&hardware_id=" << hardware_id;
 
     // Serial.println();
     // Serial.println(url.str().c_str());
