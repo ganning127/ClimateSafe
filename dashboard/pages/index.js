@@ -133,7 +133,11 @@ export default function Home({ isConnected }) {
           Works
         </HeadingWithDesc>
 
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 3 }}
+          spacing={8}
+          id="how-it-works"
+        >
           <IconCard
             icon={TbNumber1}
             title="Heltec Wifi Kit 32"

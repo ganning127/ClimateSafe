@@ -35,7 +35,7 @@ export const Landing = () => {
           and have the peace of mind that you're in good hands.
         </Text>
         <Stack spacing={6} direction={"row"}>
-          <Button rounded={"full"} px={6}>
+          <Button rounded={"full"} px={6} as="a" href="#how-it-works">
             Learn more
           </Button>
           <Button
@@ -43,7 +43,9 @@ export const Landing = () => {
             px={6}
             color="white"
             bg={"darkgreen"}
-            _hover={{ bg: "medgreen" }}
+            _hover={{ bg: "green.400" }}
+            as="a"
+            href="/login"
           >
             Get started
           </Button>
