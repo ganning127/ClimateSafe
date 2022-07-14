@@ -33,17 +33,19 @@ export default async function handler(req, res) {
     gasSmokeAlertStatus,
     lpgAlertStatus,
     airPollutionAlertStatus,
-  } = await checkAndSendAlert({
-    hardware_id,
-    temp,
-    humidity,
-    co,
-    combust_gas,
-    gas_smoke,
-    air_pollution,
-    lpg,
-  });
-
+  } = await checkAndSendAlert(
+    {
+      hardware_id,
+      temp,
+      humidity,
+      co,
+      combust_gas,
+      gas_smoke,
+      air_pollution,
+      lpg,
+    },
+    collection
+  );
   const data = {
     created_at: new Date(),
     tempAlertStatus,
@@ -68,7 +70,47 @@ export default async function handler(req, res) {
   res.status(200).json({ resp });
 }
 
-async function checkAndSendAlert(data) {
+async function checkAndSendAlert(data, collection) {
+  // check if a temperature alert has been sent in the past five minutes
+  let text = true;
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+  const fiveMinutesAgoQuery = {
+    created_at: { $gt: fiveMinutesAgo },
+    hardware_id: data.hardware_id,
+    $or: [
+      {
+        tempAlertStatus: { $gt: 1 },
+      },
+      {
+        humidityAlertStatus: { $gt: 1 },
+      },
+      {
+        coAlertStatus: { $gt: 1 },
+      },
+      {
+        combustGasAlertStatus: { $gt: 1 },
+      },
+      {
+        gasSmokeAlertStatus: { $gt: 1 },
+      },
+
+      {
+        lpgAlertStatus: { $gt: 1 },
+      },
+      {
+        airPollutionAlertStatus: { $gt: 1 },
+      },
+    ],
+  };
+  const fiveMinutesAgoResult = await collection
+    .find(fiveMinutesAgoQuery)
+    .toArray();
+  console.log("fiveMinutesAgoResult: ", fiveMinutesAgoResult);
+
+  if (fiveMinutesAgoResult.length > 0) {
+    text = false;
+  }
+
   let {
     hardware_id,
     temp,
@@ -80,8 +122,8 @@ async function checkAndSendAlert(data) {
     lpg,
   } = data;
 
-  let tempAlertStatus = await checkForTemp(temp, hardware_id);
-  let humidityAlertStatus = await checkForHumidity(humidity, hardware_id);
+  let tempAlertStatus = await checkForTemp(temp, hardware_id, text);
+  let humidityAlertStatus = await checkForHumidity(humidity, hardware_id, text);
   let coAlertStatus = await checkForCO(co, hardware_id);
   let combustGasAlertStatus = await checkForCombustGas(
     combust_gas,
@@ -109,7 +151,7 @@ async function checkForAirPollution(air_pollution, hardware_id) {
   return SAFE;
 }
 
-async function checkForTemp(temp, hardware_id) {
+async function checkForTemp(temp, hardware_id, text) {
   console.log("ID: ", hardware_id);
   if (isNaN(temp) || temp == null) {
     return SAFE;
@@ -119,23 +161,27 @@ async function checkForTemp(temp, hardware_id) {
   let fTemp = (temp * 9) / 5 + 32;
 
   if ((fTemp > 13 && fTemp < 31) || (fTemp >= 90 && fTemp < 105)) {
-    await sendText(
-      BOARD_MAPPER[hardware_id],
-      "Slightly Harmful (temperature): " + fTemp + "F"
-    );
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "Slightly Harmful (temperature): " + fTemp + "F"
+      );
+    }
     return MED_HARM;
   } else if (fTemp <= 13 || fTemp >= 105) {
-    await sendText(
-      BOARD_MAPPER[hardware_id],
-      "DANGEROUS (temperature): " + fTemp + "F"
-    );
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "DANGEROUS (temperature): " + fTemp + "F"
+      );
+    }
     return DANGEROUS;
   }
 
   return SAFE;
 }
 
-async function checkForHumidity(humidity, hardware_id) {
+async function checkForHumidity(humidity, hardware_id, text) {
   if (isNaN(humidity) || humidity == null) {
     return SAFE;
   }
@@ -143,23 +189,27 @@ async function checkForHumidity(humidity, hardware_id) {
   humidity = parseFloat(humidity);
 
   if (humidity > 70) {
-    await sendText(
-      BOARD_MAPPER[hardware_id],
-      "Caution (humidity): Humidity is at " + humidity + "%"
-    );
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "Caution (humidity): Humidity is at " + humidity + "%"
+      );
+    }
     return MED_HARM;
   } else if (humidity >= 100) {
-    await sendText(
-      BOARD_MAPPER[hardware_id],
-      "ALERT (humidity): Humidity is very high, at " + humidity + "%"
-    );
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "ALERT (humidity): Humidity is very high, at " + humidity + "%"
+      );
+    }
     return DANGEROUS;
   }
 
   return SAFE;
 }
 
-async function checkForCO(co, hardware_id) {
+async function checkForCO(co, hardware_id, text) {
   if (isNaN(co) || co == null) {
     return SAFE;
   }
@@ -167,21 +217,28 @@ async function checkForCO(co, hardware_id) {
   co = parseFloat(co);
 
   if (co > 51 && co < 100) {
-    await sendText(
-      BOARD_MAPPER[hardware_id],
-      "Slightly Harmful (CO): " + co + "ppm"
-    );
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "Slightly Harmful (CO): " + co + "ppm"
+      );
+    }
     return MED_HARM;
   }
   if (co >= 100) {
-    await sendText(BOARD_MAPPER[hardware_id], "DANGEROUS (CO): " + co + "ppm");
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "DANGEROUS (CO): " + co + "ppm"
+      );
+    }
     return DANGEROUS;
   }
 
   return SAFE;
 }
 
-async function checkForCombustGas(combust_gas, hardware_id) {
+async function checkForCombustGas(combust_gas, hardware_id, text) {
   if (isNaN(combust_gas) || combust_gas == null) {
     return SAFE;
   }
@@ -189,24 +246,28 @@ async function checkForCombustGas(combust_gas, hardware_id) {
   combust_gas = parseFloat(combust_gas);
 
   if (combust_gas > 1000 && combust_gas < 5000) {
-    await sendText(
-      BOARD_MAPPER[hardware_id],
-      "Slightly Harmful (Methane): " + combust_gas + "ppm"
-    );
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "Slightly Harmful (Methane): " + combust_gas + "ppm"
+      );
+    }
     return MED_HARM;
   }
   if (combust_gas >= 5001) {
-    await sendText(
-      BOARD_MAPPER[hardware_id],
-      "DANGEROUS (Methane): " + combust_gas + "ppm"
-    );
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "DANGEROUS (Methane): " + combust_gas + "ppm"
+      );
+    }
     return DANGEROUS;
   }
 
   return SAFE;
 }
 
-async function checkForGasSmoke(gas_smoke, hardware_id) {
+async function checkForGasSmoke(gas_smoke, hardware_id, text) {
   if (isNaN(gas_smoke) || gas_smoke == null) {
     return SAFE;
   }
@@ -214,23 +275,27 @@ async function checkForGasSmoke(gas_smoke, hardware_id) {
   gas_smoke = parseFloat(gas_smoke);
 
   if (gas_smoke > 51 && gas_smoke < 100) {
-    await sendText(
-      BOARD_MAPPER[hardware_id],
-      "Slightly Harmful (Gas Smoke): " + gas_smoke + "ppm"
-    );
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "Slightly Harmful (Gas Smoke): " + gas_smoke + "ppm"
+      );
+    }
     return MED_HARM;
   } else if (gas_smoke >= 100) {
-    await sendText(
-      BOARD_MAPPER[hardware_id],
-      "DANGEROUS (Gas Smoke): " + gas_smoke + "ppm"
-    );
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "DANGEROUS (Gas Smoke): " + gas_smoke + "ppm"
+      );
+    }
     return DANGEROUS;
   }
 
   return SAFE;
 }
 
-async function checkForLPG(lpg, hardware_id) {
+async function checkForLPG(lpg, hardware_id, text) {
   if (isNaN(lpg) || lpg == null) {
     return SAFE;
   }
@@ -238,7 +303,12 @@ async function checkForLPG(lpg, hardware_id) {
   lpg = parseFloat(lpg);
 
   if (lpg > 2000) {
-    await sendText(BOARD_MAPPER[hardware_id], "Harmful (LPG): " + lpg + "ppm");
+    if (text) {
+      await sendText(
+        BOARD_MAPPER[hardware_id],
+        "Harmful (LPG): " + lpg + "ppm"
+      );
+    }
     return MED_HARM;
   }
 }
