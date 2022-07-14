@@ -69,7 +69,7 @@ export default function Dashboard({ success, data }) {
   return (
     <>
       <Head>
-        <title>Dashboard | ClimateSafe</title>
+        <title>Raw Data | ClimateSafe</title>
       </Head>
 
       <SideBar active="raw data">

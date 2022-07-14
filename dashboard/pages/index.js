@@ -15,7 +15,7 @@ import { MedSep } from "../components/Separators/MedSep";
 import { SmSep } from "../components/Separators/SmSep";
 import { IconCard } from "../components/Cards/IconCard";
 import { HeadingWithDesc } from "../components/Headings/HeadingWithDesc";
-import { AiOutlineCloud } from "react-icons/ai";
+import { AiOutlineCloud, AiOutlineFire } from "react-icons/ai";
 import { FaTemperatureHigh } from "react-icons/fa";
 import { WiSmoke, WiHumidity } from "react-icons/wi";
 import { MdOutlineMasks } from "react-icons/md";
@@ -55,7 +55,7 @@ const detects = [
     color: "green.300",
   },
   {
-    icon: BiGasPump,
+    icon: AiOutlineFire,
     title: "Combustable Gas",
     desc: "Being in exposure to combustible gases can burn in the presence of oxygen.",
     color: "purple.300",
