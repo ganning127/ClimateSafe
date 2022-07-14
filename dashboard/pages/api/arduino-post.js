@@ -10,6 +10,7 @@ const BOARD_MAPPER = {
 const SAFE = 1;
 const MED_HARM = 2;
 const DANGEROUS = 3;
+let alertSent = false;
 
 export default async function handler(req, res) {
   const client = await clientPromise;
@@ -46,6 +47,7 @@ export default async function handler(req, res) {
     },
     collection
   );
+
   const data = {
     created_at: new Date(),
     tempAlertStatus,
@@ -63,6 +65,7 @@ export default async function handler(req, res) {
     gas_smoke,
     air_pollution,
     lpg,
+    alertSent,
   };
 
   const resp = await collection.insertOne(data);
@@ -77,6 +80,7 @@ async function checkAndSendAlert(data, collection) {
   const fiveMinutesAgoQuery = {
     created_at: { $gt: fiveMinutesAgo },
     hardware_id: data.hardware_id,
+    alertSent: true,
     $or: [
       {
         tempAlertStatus: { $gt: 1 },
@@ -322,4 +326,5 @@ async function sendText(number, msg) {
     from: "+12565379261",
     to: sendNumber,
   });
+  alertSent = true;
 }
