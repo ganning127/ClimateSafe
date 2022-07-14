@@ -110,6 +110,7 @@ async function checkForAirPollution(air_pollution, hardware_id) {
 }
 
 async function checkForTemp(temp, hardware_id) {
+  console.log("ID: ", hardware_id);
   if (isNaN(temp) || temp == null) {
     return SAFE;
   }
@@ -236,7 +237,7 @@ async function checkForLPG(lpg, hardware_id) {
 
   lpg = parseFloat(lpg);
 
-  if (lpg < 2000) {
+  if (lpg > 2000) {
     await sendText(BOARD_MAPPER[hardware_id], "Harmful (LPG): " + lpg + "ppm");
     return MED_HARM;
   }
@@ -244,9 +245,11 @@ async function checkForLPG(lpg, hardware_id) {
 
 async function sendText(number, msg) {
   console.log("sending text...");
+  const sendNumber = "+1" + number;
+  console.log(sendNumber);
   await client.messages.create({
     body: msg,
     from: "+12565379261",
-    to: "+1" + number,
+    to: sendNumber,
   });
 }
