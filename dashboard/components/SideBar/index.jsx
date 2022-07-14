@@ -18,12 +18,18 @@ import { FiMenu } from "react-icons/fi";
 import { AiOutlineHeart } from "react-icons/ai";
 import { User } from "./User";
 import { BsTable } from "react-icons/bs";
+import { BiCodeAlt } from "react-icons/bi";
 const LinkItems = [
   { name: "Dashboard", icon: AiOutlineHeart, href: "/dashboard" },
   {
     name: "Raw Data",
     icon: BsTable,
     href: "/dashboard/raw-data",
+  },
+  {
+    name: "Developers",
+    icon: BiCodeAlt,
+    href: "/dashboard/developers",
   },
 ];
 

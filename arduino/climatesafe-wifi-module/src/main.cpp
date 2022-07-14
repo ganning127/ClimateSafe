@@ -195,10 +195,6 @@ void setup()
 void loop()
 {
     counter++;
-    if (counter > 2)
-    {
-        return; // only send 2 API requests
-    }
 
     String hardware_id = "demo-board";
     temperature = dht.getTemperature();
@@ -209,37 +205,40 @@ void loop()
     float lpg = MQ2values[0];
     float combust_gas = analogRead(MQ5);
 
-    String combustableGasDisplay = "CG PPM: " + (String)combust_gas;
-    // String temperatureDisplay = "Temperature: " + (String)temperature + "°C";
-    // String humidityDisplay = "Humidity: " + (String)humidity + "%";
-    // String coPPMDisplay = "CO PPM: " + (String)coPPM;
+    String combustableGasDisplay = "combGas: " + (String)combust_gas;
+    String temperatureDisplay = "temp: " + (String)temperature + "°C";
+    String humidityDisplay = "humidity: " + (String)humidity + "%";
+    String coPPMDisplay = "CO: " + (String)coPPM + "ppm";
     String smokeDisplay = "Smoke: " + (String)gas_smoke;
     String lpgDisplay = "LPG: " + (String)lpg;
 
     Heltec.display->clear();
-    // Heltec.display->drawString(0, 0, temperatureDisplay);
-    // Heltec.display->drawString(0, 12, humidityDisplay);
-    // Heltec.display->drawString(0, 24, coPPMDisplay);
-    Heltec.display->drawString(0, 0, smokeDisplay);
-    Heltec.display->drawString(0, 12, lpgDisplay);
-    Heltec.display->drawString(0, 24, combustableGasDisplay);
+    Heltec.display->drawString(90, 0, (String)counter);
+
+    Heltec.display->drawString(0, 0, temperatureDisplay);
+    Heltec.display->drawString(0, 12, humidityDisplay);
+    Heltec.display->drawString(0, 24, coPPMDisplay);
+    Heltec.display->drawString(0, 36, smokeDisplay);
+    Heltec.display->drawString(0, 48, lpgDisplay);
+    Heltec.display->drawString(0, 60, combustableGasDisplay);
 
     Heltec.display->display();
 
     stringstream url;
     url << "https://climatesafe.vercel.app/api/arduino-post"
-        << "?temp=" << to_string(temperature) << "&humidity=" << to_string(humidity) << "&co=" << to_string(coPPM) << "&hardware_id=" << hardware_id << "&gas_smoke=" << to_string(gas_smoke) << "&lpg=" << to_string(lpg) << "&combust_gas=" << to_string(combust_gas);
+        << "?temp=" << to_string(temperature) << "&humidity=" << to_string(humidity) << "&co=" << to_string(coPPM) << "&hardware_id=demo-board"
+        << "&gas_smoke=" << to_string(gas_smoke) << "&lpg=" << to_string(lpg) << "&combust_gas=" << to_string(combust_gas);
 
     Serial.println();
     Serial.println(url.str().c_str());
 
     http.begin(url.str().c_str());
-    int httpResponseCode = http.POST("");
+    int httpResponseCode = http.GET();
 
     String payload = http.getString(); // HTTP Response
+    Serial.println(payload);
 
-    Heltec.display->drawString(0, 36, payload);
-    Heltec.display->display();
-
+    // Heltec.display->drawString(0, 36, payload);
+    // Heltec.display->display();
     delay(1000);
 }
