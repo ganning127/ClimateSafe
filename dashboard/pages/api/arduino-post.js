@@ -243,11 +243,10 @@ async function checkForLPG(lpg, hardware_id) {
 }
 
 async function sendText(number, msg) {
-  client.messages
-    .create({
-      body: msg,
-      from: "+12565379261",
-      to: "+1" + number,
-    })
-    .then((message) => console.log(message.sid));
+  console.log("sending text...");
+  await client.messages.create({
+    body: msg,
+    from: "+12565379261",
+    to: "+1" + number,
+  });
 }
