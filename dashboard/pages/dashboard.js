@@ -3,6 +3,7 @@ import clientPromise from "../lib/mongodb";
 import { useRouter } from "next/router";
 import {
   Container,
+  FormLabel,
   SimpleGrid,
   Text,
   Img,
@@ -27,35 +28,60 @@ import { BsAlarm } from "react-icons/bs";
 import Chart from "chart.js/auto"; // needed for "no tree shaking"
 import { Line } from "react-chartjs-2";
 
-export default function Dashboard({ success, data }) {
-  const router = useRouter();
-
+export default function Dashboard({
+  success,
+  earliest,
+  latestDataPoint,
+  coAvg,
+  tempAvg,
+  humidityAvg,
+  gasSmokeAvg,
+  combustGasAvg,
+  lpgAvg,
+  numAlerts,
+}) {
   const [lastRefresh, setLastRefresh] = useState("");
   const [startDate, setStartDate] = useState(new Date("January 1, 1970"));
   const [endDate, setEndDate] = useState(new Date());
+  const [data, setData] = useState([]);
+  const [filterData, setFilterData] = useState([]);
 
-  const earliest = data.map((item) => item.created_at).sort((a, b) => a - b)[0];
+  useEffect(() => {
+    setLastRefresh(new Date().toLocaleString());
+    async function fetchData() {
+      const resp = await fetch("/api/get-all-data");
+      const data = await resp.json();
+      let useData = data.data.full_data;
+      setData(useData);
+
+      console.log("USEDATA", useData);
+      setFilterData(useData);
+    }
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const filteredData = data.filter((item) => {
+      return (
+        new Date(item.created_at) > startDate &&
+        new Date(item.created_at) < endDate
+      );
+    });
+    setFilterData(filteredData);
+  }, [startDate, endDate]);
 
   // filter the data list for only documents created_at after startDate and before endDate
 
-  const filterData = data.filter((item) => {
-    return (
-      new Date(item.created_at) > startDate &&
-      new Date(item.created_at) < endDate
-    );
-  });
-
-  console.log("FilterData: ", filterData[0]);
-
-  let {
-    coAvg,
-    tempAvg,
-    humidityAvg,
-    gasSmokeAvg,
-    combustGasAvg,
-    lpgAvg,
-    numAlerts,
-  } = dataAnalysis(filterData);
+  // let {
+  //   coAvg,
+  //   tempAvg,
+  //   humidityAvg,
+  //   gasSmokeAvg,
+  //   combustGasAvg,
+  //   lpgAvg,
+  //   numAlerts,
+  // } = dataAnalysis(filterData);
 
   const tempLineChart = lineChartProcessData(filterData, "temp", "lightred");
 
@@ -80,17 +106,6 @@ export default function Dashboard({ success, data }) {
     "red"
   );
   const lpgLineChart = lineChartProcessData(filterData, "lpg", "blue");
-
-  const latestDataPoint = data[data.length - 1];
-
-  useEffect(() => {
-    setLastRefresh(new Date().toLocaleString());
-
-    setInterval(() => {
-      router.replace(router.asPath); // refresh every 5 minutes
-      setLastRefresh(new Date().toLocaleString());
-    }, 300000);
-  }, []);
 
   return (
     <>
@@ -172,8 +187,9 @@ export default function Dashboard({ success, data }) {
 
         <HStack>
           <FormControl>
+            <FormLabel>Start Date</FormLabel>
             <Input
-              placeHolder="Select Date and Time"
+              placeholder="Select Date and Time"
               size="md"
               backgroundColor="#ffffff"
               type="datetime-local"
@@ -187,8 +203,9 @@ export default function Dashboard({ success, data }) {
             />
           </FormControl>
           <FormControl>
+            <FormLabel>End Date</FormLabel>
             <Input
-              placeHolder="Select Date and Time"
+              placeholder="Select Date and Time"
               size="md"
               backgroundColor="#ffffff"
               type="datetime-local"
@@ -308,11 +325,38 @@ export async function getServerSideProps(context) {
 
     const data = JSON.parse(JSON.stringify(tempData));
 
+    const earliest = data
+      .map((item) => item.created_at)
+      .sort((a, b) => a - b)[0];
+
+    let {
+      coAvg,
+      tempAvg,
+      humidityAvg,
+      gasSmokeAvg,
+      combustGasAvg,
+      lpgAvg,
+      numAlerts,
+    } = dataAnalysis(data);
+
+    const latestDataPoint = data[data.length - 1];
+
     return {
-      props: { success: true, data: data },
+      props: {
+        success: true,
+        earliest,
+        latestDataPoint,
+        coAvg,
+        tempAvg,
+        humidityAvg,
+        gasSmokeAvg,
+        combustGasAvg,
+        lpgAvg,
+        numAlerts,
+      },
     };
   } catch (e) {
-    console.error(e);
+    console.error("GetServerSideProps Error" + e);
     return {
       props: { success: false, data: null },
     };
