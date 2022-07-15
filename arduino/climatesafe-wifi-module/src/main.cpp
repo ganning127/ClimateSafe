@@ -38,13 +38,28 @@
 #include "MQ2.h"
 #define A_PIN 33
 #define VOLTAGE 3.3
+#include <TinyGPSPlus.h>
+/*
+   This sample sketch should be the first you try out when you are testing a TinyGPSPlus
+   (TinyGPSPlus) installation.  In normal use, you feed TinyGPSPlus objects characters from
+   a serial NMEA GPS device, but this example uses static strings for simplicity.
+*/
+
+// A sample NMEA stream.
+const char *gpsStream =
+    "$GPRMC,045103.000,A,3014.1984,N,09749.2872,W,0.67,161.46,030913,,,A*7C\r\n"
+    "$GPGGA,045104.000,3014.1985,N,09749.2873,W,1,09,1.2,211.6,M,-22.5,M,,0000*62\r\n"
+    "$GPRMC,045200.000,A,3014.3820,N,09748.9514,W,36.88,65.02,030913,,,A*77\r\n"
+    "$GPGGA,045201.000,3014.3864,N,09748.9411,W,1,10,1.2,200.8,M,-22.5,M,,0000*6C\r\n"
+    "$GPRMC,045251.000,A,3014.4275,N,09749.0626,W,0.51,217.94,030913,,,A*7D\r\n"
+    "$GPGGA,045252.000,3014.4273,N,09749.0628,W,1,09,1.3,206.9,M,-22.5,M,,0000*6F\r\n";
+
+// The TinyGPSPlus object
+TinyGPSPlus gps;
 
 using namespace std;
 
-// int Analog_Input = 25; // Pin 25
-
-// MQUnifiedsensor MQ2(Analog_Input);
-
+void displayInfo(void);
 MQ7 mq7(A_PIN, VOLTAGE);
 MQ2 mq2(35);
 
@@ -101,60 +116,12 @@ void WIFISetUp(void)
         Heltec.display->clear();
         Heltec.display->drawString(0, 0, "Connecting...Failed");
         Heltec.display->display();
-        //		while(1);
     }
     Heltec.display->drawString(0, 10, "WIFI Setup done");
     Heltec.display->display();
     Heltec.display->clear();
-    // Heltec.display->display();
 
     delay(500);
-}
-
-void WIFIScan(void)
-{
-    Heltec.display->drawString(0, 20, "Scan start...");
-    Heltec.display->display();
-
-    int n = WiFi.scanNetworks();
-    Heltec.display->drawString(0, 30, "Scan done");
-    Heltec.display->display();
-    delay(500);
-    Heltec.display->clear();
-
-    if (n == 0)
-    {
-        Heltec.display->clear();
-        Heltec.display->drawString(0, 0, "no network found");
-        Heltec.display->display();
-        while (1)
-            ;
-    }
-    else
-    {
-        Serial.print(n);
-        Heltec.display->drawString(0, 0, (String)n);
-        Heltec.display->drawString(14, 0, "networks found:");
-        Heltec.display->display();
-        delay(500);
-
-        for (int i = 0; i < n; ++i)
-        {
-            // Print SSID and RSSI for each network found
-            Heltec.display->drawString(0, (i + 1) * 9, (String)(i + 1));
-            Heltec.display->drawString(6, (i + 1) * 9, ":");
-            Heltec.display->drawString(12, (i + 1) * 9, (String)(WiFi.SSID(i)));
-            Heltec.display->drawString(90, (i + 1) * 9, " (");
-            Heltec.display->drawString(98, (i + 1) * 9, (String)(WiFi.RSSI(i)));
-            Heltec.display->drawString(114, (i + 1) * 9, ")");
-            //            display.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN)?" ":"*");
-            delay(10);
-        }
-    }
-
-    Heltec.display->display();
-    delay(800);
-    Heltec.display->clear();
 }
 
 void setup()
@@ -194,6 +161,12 @@ void setup()
 
 void loop()
 {
+
+    // if (Serial.available())
+    // {
+    //     if (gps.encode(Serial.read()))
+    //         displayInfo();
+    // }
     counter++;
 
     String hardware_id = "demo-board";
@@ -241,4 +214,59 @@ void loop()
     // Heltec.display->drawString(0, 36, payload);
     // Heltec.display->display();
     delay(1000);
+}
+
+void displayInfo()
+{
+    Serial.print(F("Location: "));
+    if (gps.location.isValid())
+    {
+        Serial.print(gps.location.lat(), 6);
+        Serial.print(F(","));
+        Serial.print(gps.location.lng(), 6);
+    }
+    else
+    {
+        Serial.print(F("INVALID"));
+    }
+
+    Serial.print(F("  Date/Time: "));
+    if (gps.date.isValid())
+    {
+        Serial.print(gps.date.month());
+        Serial.print(F("/"));
+        Serial.print(gps.date.day());
+        Serial.print(F("/"));
+        Serial.print(gps.date.year());
+    }
+    else
+    {
+        Serial.print(F("INVALID"));
+    }
+
+    Serial.print(F(" "));
+    if (gps.time.isValid())
+    {
+        if (gps.time.hour() < 10)
+            Serial.print(F("0"));
+        Serial.print(gps.time.hour());
+        Serial.print(F(":"));
+        if (gps.time.minute() < 10)
+            Serial.print(F("0"));
+        Serial.print(gps.time.minute());
+        Serial.print(F(":"));
+        if (gps.time.second() < 10)
+            Serial.print(F("0"));
+        Serial.print(gps.time.second());
+        Serial.print(F("."));
+        if (gps.time.centisecond() < 10)
+            Serial.print(F("0"));
+        Serial.print(gps.time.centisecond());
+    }
+    else
+    {
+        Serial.print(F("INVALID"));
+    }
+
+    Serial.println();
 }
