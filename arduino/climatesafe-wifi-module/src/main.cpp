@@ -45,6 +45,12 @@
    a serial NMEA GPS device, but this example uses static strings for simplicity.
 */
 
+static char LAT[10];
+static char LONG[10];
+HardwareSerial GPSSerial(2);
+unsigned char buffer[256];
+int GPScount = 0;
+
 // A sample NMEA stream.
 const char *gpsStream =
     "$GPRMC,045103.000,A,3014.1984,N,09749.2872,W,0.67,161.46,030913,,,A*7C\r\n"
@@ -131,6 +137,13 @@ void setup()
     while (!Serial)
         ; // wait for serial port to connect. Needed for native USB
 
+    // Start the hardware serial (rx2,tx2) to read data from gps device
+    // Initialize serial monitor and wait for port to open
+    // GPSSerial.begin(9600, SERIAL_8N1, 16, 17);
+    // Serial.begin(115200);
+    // delay(10);
+    // Serial.print("#################\nInitializing...");
+
     dht.setup(27, DHTesp::DHT11);
 
     temperature = dht.getTemperature();
@@ -162,11 +175,155 @@ void setup()
 void loop()
 {
 
-    // if (Serial.available())
+    // if (Serial.available() > 0)
     // {
-    //     if (gps.encode(Serial.read()))
-    //         displayInfo();
+    //     Serial.println("serial available");
+
+    // if (gps.encode(*gpsStream++))
+    // {
+    //     Serial.println("gps encoded");
+    //     displayInfo();
     // }
+    // }
+
+    // while (GPSSerial.available())
+    // {
+    //     buffer[GPScount++] = GPSSerial.read();
+    //     if (GPScount == 256)
+    //     {
+    //         break;
+    //     }
+    // }
+
+    // // Cast GPS Data Buffer as String
+    // String myString = (const char *)buffer;
+
+    // // Find the Line you are interested in
+    // if (myString.startsWith("$GPRMC"))
+    // {
+
+    //     // Trim String from second "$" to end
+    //     myString.remove(myString.indexOf("$", 1));
+
+    //     // Trim String up to first ","
+    //     int idx = myString.indexOf(",");
+    //     idx++;
+    //     myString.remove(0, idx);
+
+    //     // Trim String up to first ","
+    //     idx = myString.indexOf(",");
+    //     idx++;
+    //     myString.remove(0, idx);
+
+    //     // Now String begins with Verification Value
+    //     char veribuff[2];
+    //     myString.toCharArray(veribuff, 2);
+    //     Serial.print("Receiver Verification : ");
+    //     Serial.println(veribuff);
+
+    //     // Trim String up to first ","
+    //     idx = myString.indexOf(",");
+    //     idx++;
+    //     myString.remove(0, idx);
+
+    //     // Now String begins with Latitude Value
+    //     char latibuff[11];
+    //     char outLat[2];
+    //     char calcbuf[9];
+    //     myString.toCharArray(latibuff, 11);
+
+    //     // Extract the Degree Section
+    //     outLat[0] = latibuff[0];
+    //     outLat[1] = latibuff[1];
+
+    //     // Extract The Minutes and Seconds for Decimalization
+    //     for (int i = 0; i <= 8; i++)
+    //     {
+    //         calcbuf[i] = latibuff[i + 2];
+    //     }
+
+    //     float calcVal;
+    //     calcVal = atof(outLat) + (atof(calcbuf) / 60);
+
+    //     // Moved Serial Prints below to account for +- NS
+
+    //     // Trim String up to first ","
+    //     idx = myString.indexOf(",");
+    //     idx++;
+    //     myString.remove(0, idx);
+
+    //     // Now String begins with N/S Value (+-)
+    //     char NSbuff[2];
+    //     myString.toCharArray(NSbuff, 2);
+
+    //     // To Account for +- NS affecting the sign of Latitude
+    //     // Southern Hemisphere Latitudes have a minus sign
+    //     if (NSbuff[0] == 'S')
+    //     {
+    //         calcVal *= -1;
+    //     }
+
+    //     Serial.print("Latitude : ");
+    //     Serial.println(calcVal, 5);
+
+    //     Serial.print("N/S : ");
+    //     Serial.println(NSbuff[0]);
+
+    //     // Trim String up to first ","
+    //     idx = myString.indexOf(",");
+    //     idx++;
+    //     myString.remove(0, idx);
+
+    //     // Now String begins with Longitude Value
+    //     char longibuff[12];
+    //     char outLNG[3];
+    //     char calcbuf2[9];
+    //     myString.toCharArray(longibuff, 12);
+
+    //     // Extract the Degree Section
+    //     outLNG[0] = longibuff[0];
+    //     outLNG[1] = longibuff[1];
+    //     outLNG[2] = longibuff[2];
+
+    //     // Extract The Minutes and Seconds for Decimalization
+    //     for (int i = 0; i <= 8; i++)
+    //     {
+    //         calcbuf2[i] = longibuff[i + 3];
+    //     }
+
+    //     float calcVal2;
+
+    //     calcVal2 = atof(outLNG) + (atof(calcbuf2) / 60);
+
+    //     // Moved Serial prints below to account for +- EW
+
+    //     // Trim String up to first ","
+    //     idx = myString.indexOf(",");
+    //     idx++;
+    //     myString.remove(0, idx);
+
+    //     // Now String begins with E/W Value (+-)
+    //     char EWbuff[2];
+    //     myString.toCharArray(EWbuff, 2);
+
+    //     // To Account for +- EW which affects the sign of Longitude
+    //     // Western Hemisphere Latitudes have a minus sign
+    //     if (EWbuff[0] == 'W')
+    //     {
+    //         calcVal2 *= -1;
+    //     }
+
+    //     Serial.print("Longitude : ");
+    //     Serial.println(calcVal2, 5);
+
+    //     Serial.print("E/W : ");
+    //     Serial.println(EWbuff[0]);
+    //     Serial.println("#################");
+
+    //     // Convert the Floats, Latitude & Longtitude to char[] for sending in Request
+    //     dtostrf(calcVal, 7, 5, LAT);
+    //     dtostrf(calcVal2, 7, 5, LONG);
+
     counter++;
 
     String hardware_id = "demo-board";
@@ -211,8 +368,8 @@ void loop()
     String payload = http.getString(); // HTTP Response
     Serial.println(payload);
 
-    // Heltec.display->drawString(0, 36, payload);
-    // Heltec.display->display();
+    // // Heltec.display->drawString(0, 36, payload);
+    // // Heltec.display->display();
     delay(1000);
 }
 

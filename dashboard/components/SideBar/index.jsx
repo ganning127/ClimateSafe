@@ -19,8 +19,14 @@ import { AiOutlineHeart } from "react-icons/ai";
 import { User } from "./User";
 import { BsTable } from "react-icons/bs";
 import { BiCodeAlt } from "react-icons/bi";
+import { TbLivePhoto } from "react-icons/tb";
 const LinkItems = [
   { name: "Dashboard", icon: AiOutlineHeart, href: "/dashboard" },
+  {
+    name: "Live Data",
+    icon: TbLivePhoto,
+    href: "/dashboard/live-data",
+  },
   {
     name: "Raw Data",
     icon: BsTable,

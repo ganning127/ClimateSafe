@@ -102,7 +102,7 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>Login - UniHeart</title>
+        <title>Login - ClimateSafe</title>
       </Head>
       <NavBar active="login" />
       <Box position={"relative"}>

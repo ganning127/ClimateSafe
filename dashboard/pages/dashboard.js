@@ -1,13 +1,15 @@
 import Head from "next/head";
 import clientPromise from "../lib/mongodb";
 import { useRouter } from "next/router";
-// TODO: Add a latest reading thing that takes the last document in mongodb
 import {
   Container,
   SimpleGrid,
   Text,
   Img,
   Box,
+  FormControl,
+  Input,
+  HStack,
   Heading,
 } from "@chakra-ui/react";
 import { SmSep } from "../components/Separators/SmSep";
@@ -29,6 +31,21 @@ export default function Dashboard({ success, data }) {
   const router = useRouter();
 
   const [lastRefresh, setLastRefresh] = useState("");
+  const [startDate, setStartDate] = useState(new Date("January 1, 1970"));
+  const [endDate, setEndDate] = useState(new Date());
+
+  const earliest = data.map((item) => item.created_at).sort((a, b) => a - b)[0];
+
+  // filter the data list for only documents created_at after startDate and before endDate
+
+  const filterData = data.filter((item) => {
+    return (
+      new Date(item.created_at) > startDate &&
+      new Date(item.created_at) < endDate
+    );
+  });
+
+  console.log("FilterData: ", filterData[0]);
 
   let {
     coAvg,
@@ -37,25 +54,32 @@ export default function Dashboard({ success, data }) {
     gasSmokeAvg,
     combustGasAvg,
     lpgAvg,
-    earliest,
     numAlerts,
-  } = dataAnalysis(data);
+  } = dataAnalysis(filterData);
 
-  const tempLineChart = lineChartProcessData(data, "temp", "lightred");
+  const tempLineChart = lineChartProcessData(filterData, "temp", "lightred");
 
   tempLineChart.datasets[0].data.forEach((element, index) => {
     tempLineChart.datasets[0].data[index] = convertCToF(element);
   });
 
   const humidityLineChart = lineChartProcessData(
-    data,
+    filterData,
     "humidity",
     "lightgreen"
   );
-  const coLineChart = lineChartProcessData(data, "co", "orange");
-  const gasSmokeLineChart = lineChartProcessData(data, "gas_smoke", "purple");
-  const combustGasLineChart = lineChartProcessData(data, "combust_gas", "red");
-  const lpgLineChart = lineChartProcessData(data, "lpg", "blue");
+  const coLineChart = lineChartProcessData(filterData, "co", "orange");
+  const gasSmokeLineChart = lineChartProcessData(
+    filterData,
+    "gas_smoke",
+    "purple"
+  );
+  const combustGasLineChart = lineChartProcessData(
+    filterData,
+    "combust_gas",
+    "red"
+  );
+  const lpgLineChart = lineChartProcessData(filterData, "lpg", "blue");
 
   const latestDataPoint = data[data.length - 1];
 
@@ -146,7 +170,40 @@ export default function Dashboard({ success, data }) {
           Metrics
         </HeadingWithDesc>
 
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+        <HStack>
+          <FormControl>
+            <Input
+              placeHolder="Select Date and Time"
+              size="md"
+              backgroundColor="#ffffff"
+              type="datetime-local"
+              onChange={(e) => {
+                if (new Date(e.target.value) > new Date()) {
+                  alert("Please select a date before today");
+                } else {
+                  setStartDate(new Date(e.target.value));
+                }
+              }}
+            />
+          </FormControl>
+          <FormControl>
+            <Input
+              placeHolder="Select Date and Time"
+              size="md"
+              backgroundColor="#ffffff"
+              type="datetime-local"
+              onChange={(e) => {
+                if (new Date(e.target.value) < startDate) {
+                  alert("Please select a date after the start date");
+                } else {
+                  setEndDate(new Date(e.target.value));
+                }
+              }}
+            />
+          </FormControl>
+        </HStack>
+
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8} mt={4}>
           <MetricCard
             desc="you started using ClimateSafe"
             num={new Date(earliest).toLocaleDateString()}
@@ -155,7 +212,7 @@ export default function Dashboard({ success, data }) {
           />
           <MetricCard
             desc="total data points"
-            num={data.length}
+            num={filterData.length}
             color="teal.300"
             icon={BiLineChart}
           />
@@ -263,8 +320,6 @@ export async function getServerSideProps(context) {
 }
 
 const dataAnalysis = (data) => {
-  const earliest = data.map((item) => item.created_at).sort((a, b) => a - b)[0];
-
   // let coSum = 0;
   // let coCount = 0;
   // let tempSum = 0;
@@ -369,14 +424,12 @@ const dataAnalysis = (data) => {
     gasSmokeAvg: gasSmokeMedian,
     combustGasAvg: combustGasMedian,
     lpgAvg: lpgMedian,
-    earliest: earliest,
 
     numAlerts: alertArray.length,
   };
 };
 
 const lineChartProcessData = (data, label, color) => {
-  console.log(data);
   // remove all data points where label is null or not a number
   data = data.filter((item) => {
     return item[label] && !isNaN(item[label]);

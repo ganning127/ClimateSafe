@@ -266,6 +266,6 @@ const NAV_ITEMS = [
   },
   {
     label: "Developers",
-    href: "/developers",
+    href: "/dashboard/developers",
   },
 ];

@@ -19,7 +19,7 @@ export const HeadingWithDesc = ({
       {desc && (
         <Text
           fontWeight="normal"
-          color="btext"
+          color="text"
           fontSize={{ base: "md", lg: "lg" }}
           my="3"
         >
