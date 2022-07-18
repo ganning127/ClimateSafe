@@ -5,6 +5,7 @@ import {
   Container,
   FormLabel,
   SimpleGrid,
+  Stack,
   Text,
   Img,
   Box,
@@ -45,6 +46,7 @@ export default function Dashboard({
   const [endDate, setEndDate] = useState(new Date());
   const [data, setData] = useState([]);
   const [filterData, setFilterData] = useState([]);
+  const [grouping, setGrouping] = useState("");
 
   useEffect(() => {
     setLastRefresh(new Date().toLocaleString());
@@ -92,20 +94,28 @@ export default function Dashboard({
   const humidityLineChart = lineChartProcessData(
     filterData,
     "humidity",
-    "lightgreen"
+    "lightgreen",
+    grouping
   );
   const coLineChart = lineChartProcessData(filterData, "co", "orange");
   const gasSmokeLineChart = lineChartProcessData(
     filterData,
     "gas_smoke",
-    "purple"
+    "purple",
+    grouping
   );
   const combustGasLineChart = lineChartProcessData(
     filterData,
     "combust_gas",
-    "red"
+    "red",
+    grouping
   );
-  const lpgLineChart = lineChartProcessData(filterData, "lpg", "blue");
+  const lpgLineChart = lineChartProcessData(
+    filterData,
+    "lpg",
+    "blue",
+    grouping
+  );
 
   return (
     <>
@@ -473,7 +483,7 @@ const dataAnalysis = (data) => {
   };
 };
 
-const lineChartProcessData = (data, label, color) => {
+const lineChartProcessData = (data, label, color, grouping) => {
   // remove all data points where label is null or not a number
   data = data.filter((item) => {
     return item[label] && !isNaN(item[label]);
@@ -505,4 +515,8 @@ const convertCToF = (c) => {
 
 const median = (arr) => {
   return arr.slice().sort((a, b) => a - b)[Math.floor(arr.length / 2)];
+};
+
+const average = (arr) => {
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
 };
