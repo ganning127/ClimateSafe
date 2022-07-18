@@ -15,13 +15,43 @@ import {
   Img,
 } from "@chakra-ui/react";
 import { FiMenu } from "react-icons/fi";
-import { AiOutlineHeart } from "react-icons/ai";
+import { AiOutlineHeart, AiOutlineCloud } from "react-icons/ai";
 import { User } from "./User";
 import { BsTable } from "react-icons/bs";
 import { BiCodeAlt } from "react-icons/bi";
 import { TbLivePhoto } from "react-icons/tb";
 const LinkItems = [
   { name: "Dashboard", icon: AiOutlineHeart, href: "/dashboard" },
+  {
+    name: "Carbon Monoxide",
+    icon: AiOutlineCloud,
+    href: "/dashboard/co",
+  },
+  {
+    name: "Humidity",
+    icon: AiOutlineCloud,
+    href: "/dashboard/humidity",
+  },
+  {
+    name: "LPG",
+    icon: AiOutlineCloud,
+    href: "/dashboard/lpg",
+  },
+  {
+    name: "Gas Smoke",
+    icon: AiOutlineCloud,
+    href: "/dashboard/gas_smoke",
+  },
+  {
+    name: "Temperature",
+    icon: AiOutlineCloud,
+    href: "/dashboard/temp",
+  },
+  {
+    name: "Combustible Gas",
+    icon: AiOutlineCloud,
+    href: "/dashboard/combust_gas",
+  },
   {
     name: "Live Data",
     icon: TbLivePhoto,
