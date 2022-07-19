@@ -331,7 +331,11 @@ export async function getServerSideProps(context) {
     const db = await client.db("climatesafe_arduino");
     const collection = await db.collection("data_points");
 
-    const tempData = await collection.find({}).limit(1000).toArray();
+    const tempData = await collection
+      .find({})
+      .sort({ created_at: -1 })
+      .limit(1000)
+      .toArray();
 
     const data = JSON.parse(JSON.stringify(tempData));
 
