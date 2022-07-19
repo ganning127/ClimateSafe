@@ -5,16 +5,18 @@ export default async function handler(req, res) {
   const db = await client.db("climatesafe_arduino");
   const collection = await db.collection("data_points");
   const arr = await collection.find({}).toArray();
-
+  let deleteNum = 0;
   for (let i = 0; i < arr.length; i++) {
     // parse data.temp as float and delete document if temp is above 49
-    if (parseFloat(arr[i].temp) > 40) {
+    if (new Date(arr[i].created_at) < new Date("2022-07-13")) {
+      console.log("deleting");
       await collection.deleteOne({ _id: arr[i]._id });
+      deleteNum++;
     }
   }
 
   const response = {
-    resp: "Done",
+    deleteNum,
   };
   res.status(200).json({ data: response });
 }

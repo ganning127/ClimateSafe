@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   const client = await clientPromise;
   const db = await client.db("climatesafe_arduino");
   const collection = await db.collection("data_points");
-  const data = await collection.find({}).toArray();
+  const data = await collection.find({}).limit(2000).toArray();
 
   const response = {
     summary: {

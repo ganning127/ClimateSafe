@@ -331,7 +331,7 @@ export async function getServerSideProps(context) {
     const db = await client.db("climatesafe_arduino");
     const collection = await db.collection("data_points");
 
-    const tempData = await collection.find({}).toArray();
+    const tempData = await collection.find({}).limit(1000).toArray();
 
     const data = JSON.parse(JSON.stringify(tempData));
 
@@ -374,53 +374,6 @@ export async function getServerSideProps(context) {
 }
 
 const dataAnalysis = (data) => {
-  // let coSum = 0;
-  // let coCount = 0;
-  // let tempSum = 0;
-  // let tempCount = 0;
-  // let humiditySum = 0;
-  // let humidityCount = 0;
-  // let gasSmokeSum = 0;
-  // let gasSmokeCount = 0;
-  // let combustGasSum = 0;
-  // let combustGasCount = 0;
-  // let lpgSum = 0;
-  // let lpgCount = 0;
-
-  // data.forEach((item) => {
-  //   if (item.co && !isNaN(item.co)) {
-  //     coSum += parseFloat(item.co);
-  //     coCount++;
-  //   }
-  //   if (item.temp && !isNaN(item.temp)) {
-  //     tempSum += parseFloat(item.temp);
-  //     tempCount++;
-  //   }
-  //   if (item.humidity && !isNaN(item.humidity)) {
-  //     humiditySum += parseFloat(item.humidity);
-  //     humidityCount++;
-  //   }
-  //   if (item.gas_smoke && !isNaN(item.gas_smoke)) {
-  //     gasSmokeSum += parseFloat(item.gas_smoke);
-  //     gasSmokeCount++;
-  //   }
-  //   if (item.combust_gas && !isNaN(item.combust_gas)) {
-  //     combustGasSum += parseFloat(item.combust_gas);
-  //     combustGasCount++;
-  //   }
-  //   if (item.lpg && !isNaN(item.lpg)) {
-  //     lpgSum += parseFloat(item.lpg);
-  //     lpgCount++;
-  //   }
-  // });
-
-  // let coAvg = coSum / coCount;
-  // let tempAvg = tempSum / tempCount;
-  // let humidityAvg = humiditySum / humidityCount;
-  // let gasSmokeAvg = gasSmokeSum / gasSmokeCount;
-  // let combustGasAvg = combustGasSum / combustGasCount;
-  // let lpgAvg = lpgSum / lpgCount;
-
   let coLst = [];
   let tempLst = [];
   let humidityLst = [];

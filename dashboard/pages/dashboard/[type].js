@@ -217,7 +217,7 @@ export async function getServerSideProps(context) {
     const collection = await db.collection("data_points");
 
     // get data from database about carbon monoxide
-    const allData = await collection.find({}).toArray();
+    const allData = await collection.find({}).limit(300).toArray();
 
     let numTypeAlerts = 0;
     let typeValuesArray = [];
